@@ -199,10 +199,65 @@ function concatArray<T>(...itens: T[]): T[] {
     return new Array().concat(...itens);
 }
 
-const numArray = concatArray<number[]>([1, 4], [5]);
+const numArray = concatArray<number[]>([1, 4], [4, 5, 9]);
 const stgArray = concatArray<string[]>(["Cesar", "Selma"], ["Villela"]);
 
 //numArray.push("Madu");  //aqui permite adicionar tipos diferentes em um mesmo Array.
 
 console.log(numArray);
 console.log(stgArray);
+
+
+//DECORATORS - decora uma função para disparar ou injetar.
+
+//decorators
+function ExibirNome(target: any){
+    console.log(target);
+}
+
+@ExibirNome
+class Funcionario {}
+
+//Ex. documentar e versionar uma API
+//aqui usando class decorator.
+
+//class decorator
+function apiVersion(version: string){
+    return (target) => {
+        Object.assign(target.prototype, { __version: version, __name: "Cesar"});
+    }
+}
+
+//attribute decorator
+function minLength(len: number) {
+    return (target:any, key: string) => {
+        let _value = target[key];
+
+        const getter = () => _value;
+        const setter = (value: string) => {
+            if(value.length < len) {
+                throw new Error(`Tamanho menor do que ${len}`);
+            } else {
+                _value = value;
+            }
+        };
+
+        //injetou
+        Object.defineProperty(target, key, {
+            get: getter,
+            set: setter,
+        })
+    };
+}
+
+class Api{
+    @minLength(5)
+    name: string;
+
+    constructor(name: string) {
+        this.name = name;
+    }
+}
+
+const api = new Api("Selma Villela");
+console.log(api.name);
